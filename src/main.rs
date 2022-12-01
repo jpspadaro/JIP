@@ -56,6 +56,6 @@ Jason's Image Processor: a custom CLI image processor.
     // Yes, you can use single and batch at the same time.
     // No, duplicate support is not guaranteed.
     if !batch.is_empty() {
-        let file_vec = batchtools::get_file_vector_from_batch(batch.clone(), verbose)?;
+        let file_vec = batchtools::get_file_vector_from_batch(batch.clone(), verbose).unwrap();
     }
 }
