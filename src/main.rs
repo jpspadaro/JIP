@@ -57,5 +57,6 @@ Jason's Image Processor: a custom CLI image processor.
     // No, duplicate support is not guaranteed.
     if !batch.is_empty() {
         let file_vec = batchtools::get_file_vector_from_batch(batch.clone(), verbose).unwrap();
+    //TODO: Parallel batch processing
     }
 }
