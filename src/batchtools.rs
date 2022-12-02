@@ -23,3 +23,9 @@ pub fn get_file_vector_from_batch (batch_file: String, verbose: bool) -> io::Res
 
     Ok(file_vec_out)
 }
+
+
+
+pub fn batch_flipv(file_vec: Vec<String>, verbose: bool) {
+    //TODO: work on this after you have a good way of managing image arrays
+}
