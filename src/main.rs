@@ -2,6 +2,7 @@ extern crate lapp;
 
 use std::process::exit;
 use image::{GenericImage, GenericImageView, ImageBuffer, DynamicImage, imageops};
+use crate::batchtools::batch_flipv;
 
 mod batchtools;
 
@@ -18,7 +19,7 @@ fn main() {
 Jason's Image Processor: a custom CLI image processor.
   -v, --verbose Output image and extra processing information
   -f, --file (default '') input file name
-  -b, --batch (default '') list of file names for parallel batch processing
+  -b, --batch (default '') batch file name
   -o, --output (default 'image.png') output file name, used as a suffix for batches
   --flipv Flip image vertically
 	");
@@ -30,36 +31,26 @@ Jason's Image Processor: a custom CLI image processor.
     let output = args.get_string("output");
     let flipv = args.get_bool("flipv");
 
-    //Single file configuration
-    if !file.is_empty() {
-        // Use the open function to load an image from a Path.
-        // `open` returns a `DynamicImage` on success.
-        let mut img = image::open(file.clone()).unwrap();
-
-        // The dimensions method returns the images width and height.
-        if verbose { verbose_out(file.clone(), &img) }
-
-        if flipv {
-            //changes img to a vertically flipped image by using method and reassigning
-            println!("Flipping image vertically.");
-            img = img.flipv();
-        }
-
-        // Write the contents of this image to the Writer in PNG format.
-        println!("Processing Complete.");
-        img.save(output.as_str()).unwrap();
-
-        println!("{}", output + " saved.");
-    }
 
     //Batch file configuration.
-    // Yes, you can use single and batch at the same time.
-    // No, duplicate support is not guaranteed.
-    if !batch.is_empty() {
-        let file_vec = batchtools::get_file_vector_from_batch(batch.clone(), verbose).unwrap();
-        if flipv {
+    let mut file_vec;
 
-        }
-    //TODO: Parallel batch processing
+    if !batch.is_empty() {
+        file_vec = batchtools::get_file_vector_from_batch(batch.clone(), verbose).unwrap();
+    } else {
+        file_vec = vec![];
     }
+    if !file.is_empty() {
+        let mut temp_file_vec: Vec<String> = vec![file];
+        file_vec.append(&mut temp_file_vec);
+    }
+
+    batchtools::create_cache_images(file_vec.clone(), verbose);
+
+    if flipv {
+        batchtools::batch_flipv(file_vec.clone(), verbose);
+    }
+
+    //TODO: Parallel batch processing
+    batchtools::remove_cache_images(verbose).expect("Problem removing cache. Delete \".JIPcache\" in this directory to clean up.");
 }
