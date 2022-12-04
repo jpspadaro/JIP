@@ -5,6 +5,7 @@ use std::fs::File;
 use std::fs::create_dir;
 use std::io::{self, prelude::*, BufReader};
 use std::ops::Add;
+use image::imageops::grayscale;
 
 fn open_image(file: String, verbose: bool) -> Result<DynamicImage, Error> {
     let mut img = image::open(file.clone()).unwrap();
@@ -90,6 +91,11 @@ pub fn batch_output (file_vec: Vec<String>, out_suffix: String, verbose: bool) {
     file_vec.into_par_iter().for_each(|x| single_output(x.clone(), out_suffix.clone(), verbose).unwrap());
 }
 
+/*
+=============
+Below this is pretty much just exposing the methods in DynamicImage that deal with modifying the look of an image.
+=============
+ */
 pub fn single_flipv(file: String, verbose: bool) -> Result<(), Error> {
     if verbose {println!("Start vertical flip: {}", file.clone());}
     let cache_file: String = String::from(".JIPcache/".to_owned() + file.as_str() + ".temp.png");
@@ -104,6 +110,73 @@ pub fn single_flipv(file: String, verbose: bool) -> Result<(), Error> {
 }
 
 pub fn batch_flipv(file_vec: Vec<String>, verbose: bool) {
-    //TODO: work on this after you have a good way of managing image arrays (NOT...USING A FILE CACHE INSTEAD)
     file_vec.into_par_iter().for_each(|x| single_flipv(x.clone(), verbose).unwrap());
+}
+
+pub fn single_fliph(file: String, verbose: bool) -> Result<(), Error> {
+    if verbose {println!("Start horizontal flip: {}", file.clone());}
+    let cache_file: String = String::from(".JIPcache/".to_owned() + file.as_str() + ".temp.png");
+    let mut img: DynamicImage = open_image(cache_file.clone(), verbose).unwrap();
+
+    img = img.fliph();
+
+    write_image(cache_file.clone(), img, verbose).expect("Image write error:");
+    if verbose {println!("Horizontal Flip finished.");}
+
+    Ok(())
+}
+
+pub fn batch_fliph(file_vec: Vec<String>, verbose: bool) {
+    file_vec.into_par_iter().for_each(|x| single_fliph(x.clone(), verbose).unwrap());
+}
+
+pub fn single_invert(file: String, verbose: bool) -> Result<(), Error> {
+    if verbose {println!("Start invert: {}", file.clone());}
+    let cache_file: String = String::from(".JIPcache/".to_owned() + file.as_str() + ".temp.png");
+    let mut img: DynamicImage = open_image(cache_file.clone(), verbose).unwrap();
+
+    img.invert();
+
+    write_image(cache_file.clone(), img, verbose).expect("Image write error:");
+    if verbose {println!("Invert finished.");}
+
+    Ok(())
+}
+
+pub fn batch_invert(file_vec: Vec<String>, verbose: bool) {
+    file_vec.into_par_iter().for_each(|x| single_invert(x.clone(), verbose).unwrap());
+}
+
+pub fn single_grayscale(file: String, verbose: bool) -> Result<(), Error> {
+    if verbose {println!("Start grayscale: {}", file.clone());}
+    let cache_file: String = String::from(".JIPcache/".to_owned() + file.as_str() + ".temp.png");
+    let mut img: DynamicImage = open_image(cache_file.clone(), verbose).unwrap();
+
+    img = img.grayscale();
+
+    write_image(cache_file.clone(), img, verbose).expect("Image write error:");
+    if verbose {println!("Grayscale finished.");}
+
+    Ok(())
+}
+
+pub fn batch_grayscale(file_vec: Vec<String>, verbose: bool) {
+    file_vec.into_par_iter().for_each(|x| single_grayscale(x.clone(), verbose).unwrap());
+}
+
+pub fn single_brighten(file: String, value:i32, verbose: bool) -> Result<(), Error> {
+    if verbose {println!("Start brighten: {}", file.clone());}
+    let cache_file: String = String::from(".JIPcache/".to_owned() + file.as_str() + ".temp.png");
+    let mut img: DynamicImage = open_image(cache_file.clone(), verbose).unwrap();
+
+    img = img.brighten(value);
+
+    write_image(cache_file.clone(), img, verbose).expect("Image write error:");
+    if verbose {println!("Brighten finished.");}
+
+    Ok(())
+}
+
+pub fn batch_brighten(file_vec: Vec<String>, value: i32, verbose: bool) {
+    file_vec.into_par_iter().for_each(|x| single_brighten(x.clone(), value, verbose).unwrap());
 }
