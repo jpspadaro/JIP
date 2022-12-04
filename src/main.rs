@@ -21,6 +21,7 @@ Jason's Image Processor: a custom CLI image processor.
   -f, --file (default '') input file name
   -b, --batch (default '') batch file name
   -o, --output (default 'image.png') output file name, used as a suffix for batches
+  -C, --leave-cache Leave cache directory after operation
   --flipv Flip image vertically
 	");
 
@@ -30,6 +31,7 @@ Jason's Image Processor: a custom CLI image processor.
     let batch = args.get_string("batch");
     let output = args.get_string("output");
     let flipv = args.get_bool("flipv");
+    let leave_cache = args.get_bool("leave-cache");
 
 
     //Batch file configuration.
@@ -50,7 +52,12 @@ Jason's Image Processor: a custom CLI image processor.
     if flipv {
         batchtools::batch_flipv(file_vec.clone(), verbose);
     }
+    if !output.is_empty() {
+        batchtools::batch_output(file_vec.clone(), output, verbose)
+    }
 
     //TODO: Parallel batch processing
-    batchtools::remove_cache_images(verbose).expect("Problem removing cache. Delete \".JIPcache\" in this directory to clean up.");
+    if !leave_cache {
+        batchtools::remove_cache_images(verbose).expect("Problem removing cache. Delete \".JIPcache\" in this directory to clean up.");
+    }
 }

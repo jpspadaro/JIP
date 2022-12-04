@@ -42,7 +42,7 @@ pub fn create_cache_images (file_vec: Vec<String>, verbose: bool) -> Result<u32,
 pub fn remove_cache_images (verbose: bool) -> Result<u32, Error> {
     //Delete the cache directory.
     std::fs::remove_dir_all(".JIPcache/").unwrap();
-
+    if verbose {println!("Cache directory removed.")}
     Ok(0)
 }
 
@@ -60,7 +60,7 @@ pub fn get_file_vector_from_batch (batch_file: String, verbose: bool) -> io::Res
 
     if verbose {
         println!("Included files:");
-        println!("{:?}", file_vec_out);
+        println!(" {:?}", file_vec_out);
     }
 
     //TODO: parse file config info
@@ -70,13 +70,36 @@ pub fn get_file_vector_from_batch (batch_file: String, verbose: bool) -> io::Res
     Ok(file_vec_out)
 }
 
-pub fn single_flipv(file: String, verbose: bool) -> Result<(), Error> {
+fn single_output(file: String, out_suffix: String, verbose: bool) -> Result<(), Error>{
+    if verbose {println!("Start file output: {}", file.clone());}
     let cache_file: String = String::from(".JIPcache/".to_owned() + file.as_str() + ".temp.png");
     let mut img: DynamicImage = open_image(cache_file.clone(), verbose).unwrap();
 
-    img.flipv();
+    if verbose {println!("  Using  cache file: {}", cache_file.clone())}
+
+    let out_file_name: String = String::from(file.split(".").collect::<Vec<&str>>()[0].to_owned() + out_suffix.as_str());
+
+    write_image(out_file_name.clone(), img, verbose).expect("Image write error:");
+    if verbose {println!("File output finished: {}", out_file_name);}
+
+    Ok(())
+
+}
+
+pub fn batch_output (file_vec: Vec<String>, out_suffix: String, verbose: bool) {
+    file_vec.into_par_iter().for_each(|x| single_output(x.clone(), out_suffix.clone(), verbose).unwrap());
+}
+
+pub fn single_flipv(file: String, verbose: bool) -> Result<(), Error> {
+    if verbose {println!("Start vertical flip: {}", file.clone());}
+    let cache_file: String = String::from(".JIPcache/".to_owned() + file.as_str() + ".temp.png");
+    let mut img: DynamicImage = open_image(cache_file.clone(), verbose).unwrap();
+
+    img = img.flipv();
 
     write_image(cache_file.clone(), img, verbose).expect("Image write error:");
+    if verbose {println!("Vertical Flip finished.");}
+
     Ok(())
 }
 
